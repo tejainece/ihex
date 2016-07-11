@@ -10,6 +10,10 @@ type (
 	}
 )
 
+func NewDecoder() *Decoder {
+	return &Decoder{}
+}
+
 func (meDec *Decoder) DecodeRecord(aRec Record) (uint32, []byte, error) {
 	var lErr error
 	switch aRec.recType {

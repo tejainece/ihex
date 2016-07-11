@@ -31,8 +31,8 @@ func CalcChksum(aBytes []byte) uint8 {
 }
 
 //MakeRecord creates record from the record's content
-func (meRec *Record) MakeRecord(aIn []byte) (*Record, error) {
-	lInLen := len(meRec.bytes)
+func MakeRecord(aIn []byte) (*Record, error) {
+	lInLen := len(aIn)
 
 	if lInLen < RecMinLen {
 		return nil, ErrInvalidRecLen
