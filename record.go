@@ -3,6 +3,7 @@ package ihex
 import (
 	"encoding/hex"
 	"github.com/tejainece/hexutils"
+	//"log"
 )
 
 type (
@@ -34,16 +35,19 @@ func CalcChksum(aBytes []byte) uint8 {
 func MakeRecord(aIn []byte) (*Record, error) {
 	lInLen := len(aIn)
 
+	//If length is too short, bail
 	if lInLen < RecMinLen {
 		return nil, ErrInvalidRecLen
 	}
 
+	//Check start character
 	if aIn[0] != byte(':') {
 		return nil, ErrInvalidRecStartCode
 	}
 
 	var lErr error
 
+	//Get length
 	lHexLen := uint8(0)
 	{
 		bTempBuf := [2]byte{}
@@ -59,6 +63,7 @@ func MakeRecord(aIn []byte) (*Record, error) {
 		return nil, ErrInvalidRecLen
 	}
 
+	//Get record type
 	var lType RecType
 	{
 		var bTypeInt uint8
@@ -82,10 +87,30 @@ func MakeRecord(aIn []byte) (*Record, error) {
 		bTempBuf := [2]byte{}
 		copy(bTempBuf[:], aIn[len(aIn)-2:])
 		lStChksum, lErr = hexutils.ToUInt8(bTempBuf)
+		//log.Printf("Stored checksum: %x", lStChksum)
 		if lErr != nil {
 			return nil, ErrNonHexContent
 		}
-		if CalcChksum(aIn[1:len(aIn)-2]) != lStChksum {
+
+		bTempBuf2 := make([]byte, (len(aIn)-3)/2)
+		var bNum int
+		bNum, lErr = hex.Decode(bTempBuf2, aIn[1:len(aIn)-2])
+
+		if lErr != nil {
+			return nil, ErrNonHexContent
+		}
+
+		if bNum != len(bTempBuf2) {
+			return nil, ErrNonHexContent
+		}
+
+		/*
+			for _, cData := range bTempBuf2 {
+				log.Printf("%x ", cData)
+			}
+		*/
+
+		if CalcChksum(bTempBuf2) != lStChksum {
 			return nil, ErrInvalidChksum
 		}
 	}
